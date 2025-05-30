@@ -5,7 +5,7 @@ Asynchronously load multiple scenes using Unity's Addressables system.
 This package uses the `UniTask` and `Scene Reference` packages. It is recommended to install these packages before installing this one.
 
 1. https://github.com/Cysharp/UniTask
-1. https://github.com/Jason-Skillman/Scene-Reference
+1. https://github.com/Jason-Skillman/Unity-Scene-Reference
 
 ---
 **Note:**
@@ -19,13 +19,9 @@ This package can be installed through the Unity `Package Manager` with Unity ver
 
 Open up the package manager `Window/Package Manager` and click on `Add package from git URL...`.
 
-![unity_package_manager_git_drop_down](Documentation~/images/unity_package_manager_git_drop_down.png)
-
 Paste in this repository's url.
 
-`https://github.com/Jason-Skillman/Scene-Fader-Manager.git`
-
-![unity_package_manager_git_with_url](Documentation~/images/unity_package_manager_git_with_url.png)
+`https://github.com/Jason-Skillman/Unity-Async-Addressables-Manager.git`
 
 Click `Add` and the package will be installed in your project.
 
@@ -42,7 +38,7 @@ If you are using Unity 2019.2 or lower than you will not be able to install the 
 Alternatively you can also install this package as a git submodule.
 
 ```console
-$ git submodule add https://github.com/Jason-Skillman/Async-Addressables-Manager.git Packages/Async-Addressables-Manager
+$ git submodule add https://github.com/Jason-Skillman/Unity-Async-Addressables-Manager.git Packages/Unity-Async-Addressables-Manager
 ```
 
 ## Async Addressables Manager
