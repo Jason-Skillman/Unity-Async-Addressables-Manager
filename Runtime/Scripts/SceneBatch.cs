@@ -1,7 +1,7 @@
 ﻿namespace JasonSkillman.AsyncAddressablesManager
 {
 	using System;
-	using JasonSkillman.SceneRef;
+	using JasonSkillman.UnitySceneReference;
 
 	/// <summary>Holds scene names. Used to load/unload scenes in batches.</summary>
 	[Serializable]
