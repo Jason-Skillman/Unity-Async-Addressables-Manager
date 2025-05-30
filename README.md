@@ -1,4 +1,4 @@
-# Async-Addressables-Manager
+# Unity-Async-Addressables-Manager
 Asynchronously load multiple scenes using Unity's Addressables system.
 
 ## Prerequisites
