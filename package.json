@@ -5,7 +5,6 @@
   "description": "Asynchronously load multiple assets and scenes using Unity's Addressables system.",
   "author": {
     "name": "Jason Skillman",
-    "email": "jason_skillman@outlook.com",
     "url": "https://github.com/Jason-Skillman"
   },
   "dependencies": {
