@@ -1,29 +1,30 @@
-﻿namespace JasonSkillman.AsyncAddressablesManager
-{
-	using System;
-	using System.Collections.Generic;
-	using System.Linq;
-	using Cysharp.Threading.Tasks;
-	using UnityEngine;
-	using UnityEngine.AddressableAssets;
-	using UnityEngine.ResourceManagement.AsyncOperations;
-	using UnityEngine.ResourceManagement.ResourceProviders;
-	using UnityEngine.SceneManagement;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.ResourceManagement.ResourceProviders;
+using UnityEngine.SceneManagement;
 
+namespace JasonSkillman.AsyncAddressablesManager
+{
 	public static partial class AddressablesManager
 	{
 		/// <summary>Stores the loaded scenes by the runtime key.</summary>
-		private static Dictionary<int, AsyncOperationHandle<SceneInstance>> loadedScenes = new Dictionary<int, AsyncOperationHandle<SceneInstance>>();	//Handle, AsyncOperationHandle<SceneInstance>
-		
+		private static Dictionary<int, AsyncOperationHandle<SceneInstance>> loadedScenes = new Dictionary<int, AsyncOperationHandle<SceneInstance>>(); //Handle, AsyncOperationHandle<SceneInstance>
+
 		public static void SetActiveScene(string activeScene)
 		{
-			Scene scene = UnityEngine.SceneManagement.SceneManager.GetSceneByName(activeScene);
+			Scene scene = SceneManager.GetSceneByName(activeScene);
 			if(!scene.IsValid())
 			{
 				Debug.LogError($"[{nameof(AddressablesManager)}] Could not set active scene to an invalid scene: {activeScene}");
 				return;
 			}
-			UnityEngine.SceneManagement.SceneManager.SetActiveScene(scene);
+
+			SceneManager.SetActiveScene(scene);
 			Debug.Log($"[{nameof(AddressablesManager)}] Set active scene: {activeScene}");
 		}
 
@@ -42,7 +43,7 @@
 			Load();
 #pragma warning restore CS4014
 		}
-		
+
 		/// <summary>
 		/// Loads all scenes in <see cref="scenes"/> asynchronously using Unity Addressables.
 		/// </summary>
@@ -57,7 +58,7 @@
 
 			int sceneCount = scenes.Length;
 			UniTask<SceneInstance>[] tasks = new UniTask<SceneInstance>[sceneCount];
-        
+
 			for(int i = 0; i < sceneCount; i++)
 			{
 				async UniTask<SceneInstance> Load(int sceneIndex)
@@ -65,13 +66,13 @@
 					AsyncOperationHandle<SceneInstance> asyncHandle = Addressables.LoadSceneAsync(scenes[sceneIndex], LoadSceneMode.Additive);
 					SceneInstance sceneInstance = await asyncHandle.ToUniTask();
 					int handle = sceneInstance.Scene.handle;
-					
+
 					//Cache all scenes loaded through Addressables. This is so the scene can be unloaded with Addressables.
 					loadedScenes.Add(handle, asyncHandle);
-					
+
 					return sceneInstance;
 				}
-				
+
 				tasks[i] = Load(i);
 			}
 
@@ -82,7 +83,7 @@
 
 			if(recalculateLightProbes)
 				LightProbes.TetrahedralizeAsync();
-			
+
 			Debug.Log($"[{nameof(AddressablesManager)}] Scenes loaded: {string.Join(", ", scenes)}");
 
 			return sceneInstances;
@@ -105,7 +106,7 @@
 			Unload();
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 		}
-		
+
 		/// <summary>
 		/// Unloads all scenes in <see cref="scenes"/> asynchronously using Unity Addressables.
 		/// </summary>
@@ -115,23 +116,23 @@
 		{
 			if(scenes == null || scenes.Length <= 0)
 				return Array.Empty<SceneInstance>();
-			
+
 			bool hasDuplicates = scenes.GroupBy(x => x).Any(g => g.Count() > 1);
 			if(hasDuplicates)
 			{
 				Debug.LogError($"[{nameof(AddressablesManager)}] Unloading multiple scenes with the same name is not supported.");
 				return Array.Empty<SceneInstance>();
 			}
-			
+
 			int sceneCount = scenes.Length;
 			UniTask<SceneInstance>[] tasks = new UniTask<SceneInstance>[sceneCount];
-        
+
 			for(int i = 0; i < sceneCount; i++)
 			{
 				async UniTask<SceneInstance> Unload(int sceneIndex)
 				{
 					string sceneName = scenes[sceneIndex];
-					
+
 					//Find the first AsyncOperationHandle with a matching scene name. This might occur if multiple scenes were loaded with the same name.
 					AsyncOperationHandle<SceneInstance> asyncHandle = loadedScenes.Values.FirstOrDefault(s => s.Result.Scene.name == sceneName);
 
@@ -140,7 +141,7 @@
 						//Debug.LogError($"[{nameof(AddressablesManager)}] Can't unload scene because it is not loaded, or was not loaded by addressables: {sceneName}");
 						return new SceneInstance();
 					}
-					
+
 					SceneInstance sceneInstance = await Addressables.UnloadSceneAsync(asyncHandle).ToUniTask();
 					int handle = sceneInstance.Scene.handle;
 
@@ -152,17 +153,17 @@
 
 				tasks[i] = Unload(i);
 			}
-        
+
 			SceneInstance[] sceneInstances = await UniTask.WhenAll(tasks);
 
 			if(recalculateLightProbes)
 				LightProbes.TetrahedralizeAsync();
-			
+
 			Debug.Log($"[{nameof(AddressablesManager)}] Scenes unloaded: {string.Join(", ", scenes)}");
 
 			return sceneInstances;
 		}
-		
+
 		/// <inheritdoc cref="UnloadAllScenesExceptForAsync(string[],System.Action,bool)"/>
 		public static void UnloadAllScenesExceptFor(string[] scenes, Action onFinish = null, bool recalculateLightProbes = true)
 		{
@@ -176,7 +177,7 @@
 			UnloadAll();
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 		}
-		
+
 		/// <summary>
 		/// Unloads all <see cref="scenes"/> asynchronously except for <see cref="scenesToKeep"/> using Unity Addressables.
 		/// </summary>
@@ -184,23 +185,23 @@
 		/// <param name="recalculateLightProbes">Recalculate light probes if true. True by default.</param>
 		public static async UniTask UnloadAllScenesExceptForAsync(string[] scenesToKeep, bool recalculateLightProbes = true)
 		{
-			int sceneCount = UnityEngine.SceneManagement.SceneManager.sceneCount;
-			
+			int sceneCount = SceneManager.sceneCount;
+
 			if(sceneCount <= 1)
 			{
 				Debug.LogError($"[{nameof(AddressablesManager)}] Can't unload the only scene left.");
 				return;
 			}
-			
-			Scene activeScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+
+			Scene activeScene = SceneManager.GetActiveScene();
 
 			//Create a list of every scene to unload.
 			List<string> scenesToRemove = new();
 			for(int i = 0; i < sceneCount; i++)
 			{
-				Scene scene = UnityEngine.SceneManagement.SceneManager.GetSceneAt(i);
+				Scene scene = SceneManager.GetSceneAt(i);
 				string sceneName = scene.name;
-				
+
 				bool continueFlag = false;
 
 				//Check if the scene matches any in scenes to keep and if so skip
@@ -212,17 +213,18 @@
 						break;
 					}
 				}
+
 				if(continueFlag) continue;
-				
+
 				if(sceneName == activeScene.name)
 				{
 					Debug.LogError($"[{nameof(AddressablesManager)}] You can't unload the active scene. Active scene: {activeScene}");
 					continue;
 				}
-				
+
 				scenesToRemove.Add(sceneName);
 			}
-			
+
 			await UnloadScenesAsync(scenesToRemove.ToArray(), recalculateLightProbes);
 		}
 
@@ -255,7 +257,7 @@
 			UniTask<SceneInstance[]> loadTask = LoadScenesAsync(sceneBatch.scenesToLoad, sceneBatch.activeScene, false);
 
 			await UniTask.WhenAll(unloadTask, loadTask);
-			
+
 			if(recalculateLightProbes)
 				LightProbes.TetrahedralizeAsync();
 		}
